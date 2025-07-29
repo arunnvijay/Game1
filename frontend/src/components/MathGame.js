@@ -1,21 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { Star, Trophy, RotateCcw } from 'lucide-react';
+import { Star, Trophy, RotateCcw, Crown } from 'lucide-react';
 
 const MathGame = () => {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [gameState, setGameState] = useState('playing'); // 'playing', 'won', 'lost'
   const [score, setScore] = useState(0);
+  const [round, setRound] = useState(1);
   const [ballPosition, setBallPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [ballDropped, setBallDropped] = useState(false);
 
-  // Generate random addition question
+  // Generate math question based on round
   const generateQuestion = () => {
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    const correctAnswer = num1 + num2;
+    const operations = ['+', '-', '×', '÷'];
+    let num1, num2, operation, correctAnswer;
+    
+    // Increase difficulty with rounds
+    const maxNumber = Math.min(5 + Math.floor(round * 1.5), 12);
+    
+    // Boss level (round 10) - more challenging
+    if (round === 10) {
+      operation = operations[Math.floor(Math.random() * 4)];
+      if (operation === '×') {
+        num1 = Math.floor(Math.random() * 8) + 5;
+        num2 = Math.floor(Math.random() * 8) + 5;
+      } else if (operation === '÷') {
+        correctAnswer = Math.floor(Math.random() * 9) + 2;
+        num2 = Math.floor(Math.random() * 8) + 2;
+        num1 = correctAnswer * num2;
+      } else {
+        num1 = Math.floor(Math.random() * 15) + 10;
+        num2 = Math.floor(Math.random() * 15) + 10;
+      }
+    } else {
+      // Progressive difficulty for rounds 1-9
+      operation = operations[Math.floor(Math.random() * 4)];
+      
+      if (operation === '×') {
+        num1 = Math.floor(Math.random() * Math.min(round + 2, 10)) + 1;
+        num2 = Math.floor(Math.random() * Math.min(round + 2, 10)) + 1;
+      } else if (operation === '÷') {
+        correctAnswer = Math.floor(Math.random() * maxNumber) + 1;
+        num2 = Math.floor(Math.random() * Math.min(round + 1, 8)) + 1;
+        num1 = correctAnswer * num2;
+      } else {
+        num1 = Math.floor(Math.random() * maxNumber) + 1;
+        num2 = Math.floor(Math.random() * maxNumber) + 1;
+      }
+    }
+    
+    // Calculate correct answer
+    switch (operation) {
+      case '+':
+        correctAnswer = num1 + num2;
+        break;
+      case '-':
+        // Ensure positive result
+        if (num1 < num2) [num1, num2] = [num2, num1];
+        correctAnswer = num1 - num2;
+        break;
+      case '×':
+        correctAnswer = num1 * num2;
+        break;
+      case '÷':
+        // Already calculated above
+        break;
+      default:
+        correctAnswer = num1 + num2;
+    }
     
     // Generate wrong answers
     const wrongAnswers = [];
