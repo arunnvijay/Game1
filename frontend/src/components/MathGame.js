@@ -470,7 +470,7 @@ const MathGame = () => {
                   <div className="text-red-600">
                     <div className="text-6xl mb-4">😅</div>
                     <h3 className="text-3xl font-bold mb-4">Wrong!</h3>
-                    <p className="text-lg mb-6">Try again! You can do it!</p>
+                    <p className="text-lg mb-6">Game will restart from the beginning. Try again!</p>
                   </div>
                 )}
                 
