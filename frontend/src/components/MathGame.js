@@ -100,6 +100,13 @@ const MathGame = () => {
           setTimeout(() => {
             setGameState('completed');
           }, 2000);
+        } else if (response.data.is_correct && !response.data.is_game_completed) {
+          // Prepare next question for correct answers
+          // Generate client-side question for next round since backend doesn't provide it
+          setTimeout(() => {
+            const nextQuestion = generateClientQuestion(response.data.current_round);
+            setCurrentQuestion(nextQuestion);
+          }, 2000);
         }
 
       } catch (error) {
