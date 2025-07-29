@@ -277,8 +277,9 @@ const MathGame = () => {
           <div className="mt-8 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold text-gray-800 mb-2">How to Play:</h3>
             <div className="text-sm text-gray-600 space-y-1">
-              <p>• Solve 10 math questions</p>
+              <p>• Solve 10 math questions perfectly in a row</p>
               <p>• Drag the ball to the correct answer</p>
+              <p>• ⚠️ Any wrong answer restarts the game!</p>
               <p>• Face the BOSS LEVEL in round 10!</p>
             </div>
           </div>
