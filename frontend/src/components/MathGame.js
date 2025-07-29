@@ -148,10 +148,16 @@ const MathGame = () => {
     }
 
     try {
-      // Generate new question for next round
-      const newQuestion = generateClientQuestion(gameSession.current_round);
+      // Use backend-provided question data if available
+      if (nextQuestionData) {
+        setCurrentQuestion(nextQuestionData);
+        setNextQuestionData(null); // Clear after use
+      } else {
+        // Fallback to client-side generation only if no backend data
+        const newQuestion = generateClientQuestion(gameSession.current_round);
+        setCurrentQuestion(newQuestion);
+      }
       
-      setCurrentQuestion(newQuestion);
       setGameState('playing');
       setBallPosition({ x: 0, y: 0 });
       setBallDropped(false);
