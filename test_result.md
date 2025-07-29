@@ -229,6 +229,17 @@ backend:
           comment: "MongoDB integration tested successfully. Player data, game sessions, and statistics are properly stored and retrieved. Data persistence verified through multiple API calls showing consistent state."
 
 frontend:
+  - task: "Answer Validation Logic Between Frontend and Backend"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/MathGame.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "🚨 CRITICAL BUG CONFIRMED: Answer validation is broken for all questions after the first one. ROOT CAUSE: Frontend uses client-side question generation (generateClientQuestion) instead of backend-provided question data. DETAILED ANALYSIS: 1) First question works correctly - backend provides question and validates answer properly. 2) For subsequent questions, backend response includes next_question:'7 + 4', next_options:[19,1,11], next_correct_answer:11. 3) However, frontend ignores this data and generates its own question using generateClientQuestion() which creates '21 ÷ 3 = 7'. 4) Player selects correct answer (7) for displayed question, but backend validates against its expected answer (11). 5) Result: is_correct:false even for correct answers. FIX REQUIRED: In nextRound() function, use backend-provided next_question, next_options, next_correct_answer instead of calling generateClientQuestion(). This affects lines 147-165 in MathGame.js."
   - task: "Setup Screen Display and Functionality"
     implemented: true
     working: true
