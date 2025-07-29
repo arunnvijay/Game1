@@ -1,26 +1,161 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { Star, Trophy, RotateCcw, Crown } from 'lucide-react';
+import { Input } from './ui/input';
+import { Star, Trophy, RotateCcw, Crown, User } from 'lucide-react';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const MathGame = () => {
+  // Game state
+  const [gameSession, setGameSession] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [gameState, setGameState] = useState('playing'); // 'playing', 'won', 'lost'
-  const [score, setScore] = useState(0);
-  const [round, setRound] = useState(1);
+  const [gameState, setGameState] = useState('setup'); // 'setup', 'playing', 'won', 'lost', 'completed'
   const [ballPosition, setBallPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [ballDropped, setBallDropped] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [startTime, setStartTime] = useState(null);
 
-  // Generate math question based on round
-  const generateQuestion = () => {
+  // Start a new game
+  const startGame = async () => {
+    if (!playerName.trim()) {
+      alert('Please enter your name to start playing!');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${API}/games`, {
+        player_name: playerName.trim()
+      });
+
+      setGameSession(response.data);
+      setCurrentQuestion({
+        question: response.data.question,
+        correctAnswer: response.data.correct_answer,
+        options: response.data.options,
+        correctIndex: response.data.options.indexOf(response.data.correct_answer),
+        isBossLevel: response.data.is_boss_level
+      });
+      setGameState('playing');
+      setBallPosition({ x: 0, y: 0 });
+      setBallDropped(false);
+      setStartTime(Date.now());
+    } catch (error) {
+      console.error('Failed to start game:', error);
+      alert('Failed to start game. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle ball drag
+  const handleBallDrag = (e) => {
+    if (!isDragging || gameState !== 'playing') return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    setBallPosition({
+      x: e.clientX - rect.left - 25,
+      y: e.clientY - rect.top - 25
+    });
+  };
+
+  // Handle ball drop on cup
+  const handleCupDrop = async (cupIndex) => {
+    if (gameState !== 'playing' || !isDragging || !gameSession) return;
+    
+    setBallDropped(true);
+    setIsDragging(false);
+    
+    // Calculate time taken
+    const timeTaken = startTime ? (Date.now() - startTime) / 1000 : 0;
+    
+    setTimeout(async () => {
+      try {
+        const response = await axios.post(`${API}/games/${gameSession.session_id}/answer`, {
+          player_answer: currentQuestion.options[cupIndex],
+          time_taken: timeTaken
+        });
+
+        if (response.data.is_correct) {
+          setGameState('won');
+        } else {
+          setGameState('lost');
+        }
+
+        // Update game session with new data
+        setGameSession(prev => ({
+          ...prev,
+          score: response.data.score,
+          current_round: response.data.current_round,
+          is_completed: response.data.is_game_completed
+        }));
+
+        // If game is completed, set state accordingly
+        if (response.data.is_game_completed) {
+          setTimeout(() => {
+            setGameState('completed');
+          }, 2000);
+        }
+
+      } catch (error) {
+        console.error('Failed to submit answer:', error);
+        setGameState('lost');
+      }
+    }, 500);
+  };
+
+  // Move to next round
+  const nextRound = async () => {
+    if (!gameSession || gameSession.is_completed) {
+      // Game completed, restart
+      setGameSession(null);
+      setCurrentQuestion(null);
+      setGameState('setup');
+      setBallPosition({ x: 0, y: 0 });
+      setBallDropped(false);
+      setIsDragging(false);
+      setPlayerName('');
+      return;
+    }
+
+    try {
+      // Generate new question for next round
+      const response = await axios.get(`${API}/games/${gameSession.session_id}`);
+      
+      // For now, we'll generate the question on frontend since backend needs modification
+      const newQuestion = generateClientQuestion(gameSession.current_round);
+      
+      setCurrentQuestion(newQuestion);
+      setGameState('playing');
+      setBallPosition({ x: 0, y: 0 });
+      setBallDropped(false);
+      setIsDragging(false);
+      setStartTime(Date.now());
+    } catch (error) {
+      console.error('Failed to get next round:', error);
+      // Fallback to client-side generation
+      const newQuestion = generateClientQuestion(gameSession.current_round);
+      setCurrentQuestion(newQuestion);
+      setGameState('playing');
+      setBallPosition({ x: 0, y: 0 });
+      setBallDropped(false);
+      setIsDragging(false);
+      setStartTime(Date.now());
+    }
+  };
+
+  // Temporary client-side question generation (fallback)
+  const generateClientQuestion = (round) => {
     const operations = ['+', '-', '×', '÷'];
     let num1, num2, operation, correctAnswer;
     
-    // Increase difficulty with rounds
     const maxNumber = Math.min(5 + Math.floor(round * 1.5), 12);
     
-    // Boss level (round 10) - more challenging
     if (round === 10) {
       operation = operations[Math.floor(Math.random() * 4)];
       if (operation === '×') {
@@ -35,7 +170,6 @@ const MathGame = () => {
         num2 = Math.floor(Math.random() * 15) + 10;
       }
     } else {
-      // Progressive difficulty for rounds 1-9
       operation = operations[Math.floor(Math.random() * 4)];
       
       if (operation === '×') {
@@ -51,13 +185,11 @@ const MathGame = () => {
       }
     }
     
-    // Calculate correct answer
     switch (operation) {
       case '+':
         correctAnswer = num1 + num2;
         break;
       case '-':
-        // Ensure positive result
         if (num1 < num2) [num1, num2] = [num2, num1];
         correctAnswer = num1 - num2;
         break;
@@ -65,11 +197,164 @@ const MathGame = () => {
         correctAnswer = num1 * num2;
         break;
       case '÷':
-        // Already calculated above
         break;
       default:
         correctAnswer = num1 + num2;
     }
+    
+    const wrongAnswers = [];
+    while (wrongAnswers.length < 2) {
+      let wrong;
+      if (operation === '×') {
+        wrong = correctAnswer + Math.floor(Math.random() * 20) - 10;
+      } else if (operation === '÷') {
+        wrong = correctAnswer + Math.floor(Math.random() * 8) - 4;
+      } else {
+        wrong = correctAnswer + Math.floor(Math.random() * 10) - 5;
+      }
+      
+      if (wrong !== correctAnswer && wrong > 0 && !wrongAnswers.includes(wrong)) {
+        wrongAnswers.push(wrong);
+      }
+    }
+    
+    const allAnswers = [correctAnswer, ...wrongAnswers];
+    const shuffledAnswers = allAnswers.sort(() => Math.random() - 0.5);
+    
+    return {
+      question: `${num1} ${operation} ${num2}`,
+      correctAnswer,
+      options: shuffledAnswers,
+      correctIndex: shuffledAnswers.indexOf(correctAnswer),
+      isBossLevel: round === 10
+    };
+  };
+
+  // Setup screen
+  if (gameState === 'setup') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-4 flex items-center justify-center">
+        <Card className="p-8 max-w-md w-full text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <Star className="text-yellow-500" size={32} />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+              Add Nivin Add!
+            </h1>
+            <Star className="text-yellow-500" size={32} />
+          </div>
+          <p className="text-xl text-gray-600 font-medium mb-8">Tap. Drop. Win!</p>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <User size={20} className="text-gray-600" />
+              <Input
+                type="text"
+                placeholder="Enter your name"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && startGame()}
+                className="flex-1"
+              />
+            </div>
+            
+            <Button
+              onClick={startGame}
+              disabled={isLoading || !playerName.trim()}
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 px-6 rounded-lg transform transition-all duration-200 hover:scale-105"
+            >
+              {isLoading ? 'Starting Game...' : 'Start Game!'}
+            </Button>
+          </div>
+
+          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+            <h3 className="font-semibold text-gray-800 mb-2">How to Play:</h3>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p>• Solve 10 math questions</p>
+              <p>• Drag the ball to the correct answer</p>
+              <p>• Face the BOSS LEVEL in round 10!</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Game completed screen
+  if (gameState === 'completed') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-4 flex items-center justify-center">
+        <Card className="p-8 max-w-md w-full text-center">
+          <div className="text-6xl mb-4">
+            {gameSession?.score === 10 ? '🏆' : '🎉'}
+          </div>
+          <h2 className="text-3xl font-bold mb-4 text-gray-800">
+            {gameSession?.score === 10 ? 'Perfect Game!' : 'Game Complete!'}
+          </h2>
+          <p className="text-xl mb-6 text-gray-600">
+            Final Score: {gameSession?.score}/10
+          </p>
+          
+          {gameSession?.score === 10 && (
+            <div className="mb-6 p-4 bg-yellow-100 rounded-lg">
+              <p className="text-yellow-800 font-semibold">
+                🌟 Incredible! You got every question right!
+              </p>
+            </div>
+          )}
+          
+          <Button
+            onClick={nextRound}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transform transition-all duration-200 hover:scale-105"
+          >
+            <RotateCcw size={20} className="mr-2" />
+            Play Again
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!currentQuestion || !gameSession) return <div>Loading...</div>;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Star className="text-yellow-500" size={32} />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+              Add Nivin Add!
+            </h1>
+            <Star className="text-yellow-500" size={32} />
+          </div>
+          <p className="text-xl text-gray-600 font-medium mb-4">Tap. Drop. Win!</p>
+          
+          <div className="flex items-center justify-center gap-6 text-lg">
+            <div className="flex items-center gap-2">
+              <User className="text-blue-600" size={20} />
+              <span className="font-semibold text-gray-700">{playerName}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Trophy className="text-amber-600" size={24} />
+              <span className="font-semibold text-gray-700">Score: {gameSession.score}/10</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {currentQuestion.isBossLevel ? (
+                <>
+                  <Crown className="text-purple-600" size={24} />
+                  <span className="font-bold text-purple-700 bg-purple-100 px-3 py-1 rounded-full">
+                    BOSS LEVEL!!!
+                  </span>
+                </>
+              ) : (
+                <span className="font-semibold text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
+                  Round {gameSession.current_round}/10
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
     
     // Generate wrong answers
     const wrongAnswers = [];
