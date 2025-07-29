@@ -119,6 +119,7 @@ const MathGame = () => {
       setBallPosition({ x: 0, y: 0 });
       setBallDropped(false);
       setIsDragging(false);
+      setPlayerName(''); // Clear player name to force re-entry
       return;
     }
 
