@@ -123,7 +123,7 @@ async def submit_answer(session_id: str, request: SubmitAnswerRequest):
                 operation=next_operation,
                 correct_answer=next_correct_answer
             )
-            game_session["rounds_data"].append(next_round_data)
+            game_session["rounds_data"].append(next_round_data.dict())
         
         # Update game session
         update_data = {
