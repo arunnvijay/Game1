@@ -12,6 +12,7 @@ const MathGame = () => {
   // Game state
   const [gameSession, setGameSession] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [nextQuestionData, setNextQuestionData] = useState(null); // Store next question from backend
   const [gameState, setGameState] = useState('setup'); // 'setup', 'playing', 'won', 'lost', 'completed'
   const [ballPosition, setBallPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
