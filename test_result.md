@@ -276,15 +276,18 @@ frontend:
 
   - task: "Wrong Answer Game Restart Behavior"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/MathGame.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "critical"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "CRITICAL FEATURE: Implemented complete game restart when wrong answer is selected. Game should return to setup screen requiring player to re-enter name. This is the most important behavior to test."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL BUG FOUND: Wrong answer restart behavior is incomplete. Game correctly returns to setup screen and shows 'Wrong!' message with restart button, but player name field retains the previous value instead of being cleared. In nextRound() function lines 114-122, setPlayerName('') is missing but present in game completion restart (line 133). This violates the requirement that wrong answers should require complete restart including re-entering name."
 
   - task: "Round Progression and Score Tracking"
     implemented: true
