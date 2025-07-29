@@ -494,7 +494,8 @@ const MathGame = () => {
               <p>1. Look at the math question above</p>
               <p>2. Drag the ball to the cup with the correct answer</p>
               <p>3. Watch the ball drop into the cup!</p>
-              <p>4. Complete all 10 rounds to face the BOSS LEVEL!</p>
+              <p>4. ⚠️ Wrong answer = Game restarts from Round 1!</p>
+              <p>5. Complete all 10 rounds perfectly to face the BOSS LEVEL!</p>
             </div>
           </Card>
         </div>
