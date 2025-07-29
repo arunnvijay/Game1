@@ -358,11 +358,9 @@ metadata:
 test_plan:
   current_focus:
     - "Wrong Answer Game Restart Behavior"
-    - "Ball Drag and Drop Mechanics"
-    - "Setup Screen Display and Functionality"
-    - "Boss Level Special Features"
-  stuck_tasks: []
-  test_all: true
+  stuck_tasks:
+    - "Wrong Answer Game Restart Behavior"
+  test_all: false
   test_priority: "critical_first"
 
 agent_communication:
