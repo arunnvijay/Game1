@@ -253,7 +253,7 @@ const MathGame = () => {
         <Card className="p-8 max-w-md w-full text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-              🎯 Add Nivin Add! 🎯
+              🎉 Add Nivin Add! 🎉
             </h1>
           </div>
           <p className="text-xl text-gray-600 font-medium mb-8">Tap. Drop. Win!</p>
