@@ -65,6 +65,10 @@ class AnswerResponse(BaseModel):
     score: int
     is_game_completed: bool
     is_boss_level: bool
+    next_question: Optional[str] = None
+    next_options: Optional[List[int]] = None
+    next_correct_answer: Optional[int] = None
+    next_is_boss_level: Optional[bool] = None
 
 
 class PlayerStats(BaseModel):
