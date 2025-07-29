@@ -109,8 +109,19 @@ const MathGame = () => {
     }, 500);
   };
 
-  // Move to next round
+  // Move to next round or restart game
   const nextRound = async () => {
+    if (gameState === 'lost') {
+      // Wrong answer - restart game completely
+      setGameSession(null);
+      setCurrentQuestion(null);
+      setGameState('setup');
+      setBallPosition({ x: 0, y: 0 });
+      setBallDropped(false);
+      setIsDragging(false);
+      return;
+    }
+
     if (!gameSession || gameSession.is_completed) {
       // Game completed, restart
       setGameSession(null);
@@ -125,9 +136,6 @@ const MathGame = () => {
 
     try {
       // Generate new question for next round
-      const response = await axios.get(`${API}/games/${gameSession.session_id}`);
-      
-      // For now, we'll generate the question on frontend since backend needs modification
       const newQuestion = generateClientQuestion(gameSession.current_round);
       
       setCurrentQuestion(newQuestion);
