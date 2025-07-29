@@ -330,11 +330,9 @@ const MathGame = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Star className="text-yellow-500" size={32} />
             <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-              🎉 Add Nivin Add! 🎉
+              🎯 Add Nivin Add! 🎯
             </h1>
-            <Star className="text-yellow-500" size={32} />
           </div>
           <p className="text-xl text-gray-600 font-medium mb-4">Tap. Drop. Win!</p>
           
