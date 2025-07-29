@@ -360,9 +360,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Wrong Answer Game Restart Behavior"
+    []
   stuck_tasks:
-    - "Wrong Answer Game Restart Behavior"
+    []
   test_all: false
   test_priority: "critical_first"
 
