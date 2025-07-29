@@ -479,7 +479,7 @@ const MathGame = () => {
                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 px-6 rounded-full transform transition-all duration-200 hover:scale-105"
                 >
                   <RotateCcw size={20} className="mr-2" />
-                  {gameSession?.current_round >= 10 ? 'Next Round' : 'Next Round'}
+                  {gameState === 'lost' ? 'Restart Game' : (gameSession?.current_round >= 10 ? 'Next Round' : 'Next Round')}
                 </Button>
               </Card>
             </div>
