@@ -88,6 +88,17 @@ const MathGame = () => {
           setGameState('lost');
         }
 
+        // Store next question data from backend if available
+        if (response.data.next_question && response.data.next_options && response.data.next_correct_answer !== undefined) {
+          setNextQuestionData({
+            question: response.data.next_question,
+            correctAnswer: response.data.next_correct_answer,
+            options: response.data.next_options,
+            correctIndex: response.data.next_options.indexOf(response.data.next_correct_answer),
+            isBossLevel: response.data.next_is_boss_level || false
+          });
+        }
+
         // Update game session with new data
         setGameSession(prev => ({
           ...prev,
@@ -100,13 +111,6 @@ const MathGame = () => {
         if (response.data.is_game_completed) {
           setTimeout(() => {
             setGameState('completed');
-          }, 2000);
-        } else if (response.data.is_correct && !response.data.is_game_completed) {
-          // Prepare next question for correct answers
-          // Generate client-side question for next round since backend doesn't provide it
-          setTimeout(() => {
-            const nextQuestion = generateClientQuestion(response.data.current_round);
-            setCurrentQuestion(nextQuestion);
           }, 2000);
         }
 
