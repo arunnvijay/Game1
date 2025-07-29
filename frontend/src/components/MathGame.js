@@ -245,11 +245,9 @@ const MathGame = () => {
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 p-4 flex items-center justify-center">
         <Card className="p-8 max-w-md w-full text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <Star className="text-yellow-500" size={32} />
             <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
-              🎉 Add Nivin Add! 🎉
+              🎯 Add Nivin Add! 🎯
             </h1>
-            <Star className="text-yellow-500" size={32} />
           </div>
           <p className="text-xl text-gray-600 font-medium mb-8">Tap. Drop. Win!</p>
           
